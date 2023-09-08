@@ -1,0 +1,19 @@
+###################################
+# Shaping file from documentation
+# https://docs.kumomta.com/userguide/configuration/trafficshaping/?h=shaping+hel#using-the-shapinglua-helper
+###################################
+
+["default"]
+connection_limit = 10
+max_connection_rate = "100/min"
+max_deliveries_per_connection = 100
+max_message_rate = "100/s"
+idle_timeout = "60s"
+#enable_tls = "Opportunistic"
+enable_tls = "OpportunisticiInsecure"
+consecutive_connection_failures_before_delay = 100
+
+["example.com"]
+mx_rollup = false
+max_deliveries_per_connection = 100
+connection_limit = 3

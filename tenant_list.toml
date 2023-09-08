@@ -1,0 +1,11 @@
+#####################################
+##  KumoMTA Tenant configurations  ##
+##################################### 
+
+["TENANT_TO_POOL"]
+  default = 'default'
+
+["TENANT_PARAMS"]
+    default.egress_pool = 'default'
+    default.retry_interval = '30 minutes'
+    default.max_age = '12 hours'

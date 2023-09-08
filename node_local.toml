@@ -1,0 +1,24 @@
+#############################################
+## KumoMTA vars for config                 ##
+#############################################
+
+# THese can be set to uses as variable in node specific configurations
+[vars]
+  Message_Expiration = '24 hours'
+  Retry_Interval = '600 seconds'
+  RFC2822_Trace_Headers = 'false'
+  TLS_type = 'OpportunisticInsecure'
+  Max_Resident_Active_Queue = 1000
+  Server_Connection_Limit= 'connection_limit = 10000'
+  Connect_Timeout = 60
+  Ehlo_Timeout = 60
+  Mailfrom_Timeout = 60
+  Rcptto_Timeout = 60
+  Body_Timeout = 30
+  Rset_Timeout = 30
+  Idle_Timeout = 15
+  ehlo_banner = "RESTRICTED for clients using ESMTP"
+  Relay_Hosts = "127.0.0.1/32"
+  Prohibited_Hosts = "127.0.0.0/8"
+  Hostname = "mta1.yourdomain.com"
+
