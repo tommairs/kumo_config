@@ -1,37 +1,31 @@
-###########################################
-# Egress Sources helper file
-# https://docs.kumomta.com/userguide/configuration/sendingips/?h=source+helper#using-the-sourceslua-policy-helper
-###########################################
+# Egress Sources and Pools
+# TOML version:
 
-[source."ip-1"]
-source_address = "10.0.0.1"
-ehlo_domain = 'mta1.examplecorp.com'
-
-[source."ip-2"]
-source_address = "10.0.0.2"
-ehlo_domain = 'mta2.examplecorp.com'
-
-[source."ip-3"]
-source_address = "10.0.0.3"
-ehlo_domain = 'mta3.examplecorp.com'
-
-# Pool containing just ip-1, which has weight=1
-[pool."BestReputation"]
-[pool."BestReputation"."ip-1"]
-
-# Pool with multiple ips
-[pool."MediumReputation"]
-
-[pool."MediumReputation"."ip-2"]
-weight = 2
-
-# We're warming up ip-3, so use it less frequently than ip-2
-[pool."MediumReputation"."ip-3"]
-weight = 1
-
+# Pool Definitions
+[pool.'priority']
+[pool.'priority'.'tomtest']
 
 [pool.'default']
-[pool.'default.'ip-1']
+[pool.'default'.'tomtest']
+#[pool.'default'.'tomtest-pub']
+
+[pool.'pool-0']
+[pool.'pool-0'.'tomtest']
+
+
+[pool.'via_routes']
+[pool.'via_routes'.'tomtest']
+
+# Egress IP Definitions
+
+[source.'tomtest']
+  source_address = '172.31.9.228'
+  ehlo_domain = 'demo2.kumomta.com'
+
+[source.'tomtest-pub']
+  source_address = '52.156.138.16'
+  ehlo_domain = 'kdev2.aasland.com'
+
 
 
 

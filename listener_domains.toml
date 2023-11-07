@@ -1,61 +1,37 @@
-###################################
-# Sample configuration from documentation
-# https://docs.kumomta.com/userguide/configuration/domains/?h=listener+helper#using-the-listener_domainslua-policy-helper
-###################################
-
+# Listener Domains Configuration
+# Set here how domains should behave
 
 ["*"]
-# You can specify * as a default, overridden by any more explicitly defined domains.
-# Since all options are false by default, this would only be needed to default
-# An option to true for all domains.
-relay_to = false
-log_oob = true
-log_arf = true
+  log_arf = true
+  log_oob = true
+  relay_to = false
 
-["example.com"]
-# allow relaying mail from anyone, so long as it is
-# addressed to example.com
-relay_to = true
+#['kdev2.aasland.com']
+#  relay_to = true
 
-["bounce.example.com"]
-# accept and log OOB bounce reports sent to bounce.example.com
-log_oob = true
+#['bounce.kdev2.aasland.com']
+#  log_oob = true
 
-["fbl.example.com"]
-# accept and log ARF feedback reports sent to fbl.example.com
-log_arf = true
+#['fbl.kdev2.aasland.com']
+#  log_arf = true
+#
 
-["send.example.com"]
-# relay to anywhere, so long as the sender domain is send.example.com
-# and the connected peer matches one of the listed CIDR blocks
-relay_from = [ '10.0.0.0/24' ]
-
-["auth-send.example.com"]
+["demo2.kumomta.com"]
 # relay to anywhere, so long as the sender domain is auth-send.example.com
 # and the connected peer has authenticated as any of the authorization identities
 # listed below using SMTP AUTH
-relay_from_authz = [ 'username1', 'username2' ]
+relay_from_authz = [ 'demo', 'myuser' ]
 
-# wildcards are permitted. This will match
-# <anything>.example.com that doesn't have
-# another non-wildcard entry explicitly
-# listed in this set of domains.
-# Note that "example.com" won't match
-# "*.example.com".
-["*.example.com"]
-# You can specify multiple options if you wish
-log_oob = true
-log_arf = true
-relay_to = true
+["bounce.demo2.kumomta.com"]
+# relay to anywhere, so long as the sender domain is auth-send.example.com
+# and the connected peer has authenticated as any of the authorization identities
+# listed below using SMTP AUTH
+relay_from_authz = [ 'demo' ]
 
-# and you can explicitly set options to false to
-# essentially exclude an entry from a wildcard
-["www.example.com"]
-relay_to = false
-log_arf = false
-log_oob = false
 
-# Define a per-listener configuration
-[listener."127.0.0.1:25"."*.example.com"]
-log_oob = false
+["demo.kumomta.com"]
+# relay to anywhere, so long as the sender domain is auth-send.example.com
+# and the connected peer has authenticated as any of the authorization identities
+# listed below using SMTP AUTH
+relay_from_authz = [ 'demo' ]
 

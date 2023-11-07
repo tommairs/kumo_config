@@ -1,19 +1,69 @@
 ###################################
-# Shaping file from documentation
-# https://docs.kumomta.com/userguide/configuration/trafficshaping/?h=shaping+hel#using-the-shapinglua-helper
+# Aasland shaping file for in-house IPs
 ###################################
 
 ["default"]
-connection_limit = 10
-max_connection_rate = "100/min"
-max_deliveries_per_connection = 100
-max_message_rate = "100/s"
-idle_timeout = "60s"
-#enable_tls = "Opportunistic"
-enable_tls = "OpportunisticiInsecure"
-consecutive_connection_failures_before_delay = 100
+  replace_base = true
+  max_deliveries_per_connection = 2
+  #retry_interval = '2400s'
+#  enable_tls = 'Opportunistic'
+#  enable_tls = 'OpportunisticInsecure'
+  enable_tls = 'Disabled'
+  max_ready = 10000
+  connection_limit  = 32
+  connect_timeout = '60s'
+  ehlo_timeout = '90s'
+  mail_from_timeout = '60s'
+  rcpt_to_timeout = '60s'
+  data_timeout = '90s'
+  rset_timeout = '90s'
+  idle_timeout = '120s'
+  prohibited_hosts = ['127.0.0.0/8']
+  max_connection_rate = '100/hour'
 
-["example.com"]
-mx_rollup = false
-max_deliveries_per_connection = 100
-connection_limit = 3
+["not-yahoo.kumomta.com"]
+  max_deliveries_per_connection = 10000
+#  retry_interval = '300s'
+  enable_tls = 'Disabled'
+  max_ready = 100000
+  connection_limit = 40000
+
+
+#[["kumomta1.com".automation]]
+#regex = "failed to resolve queue"
+#action = "Suspend"
+#action = SetConfig{{name="connection_limit", value=11}}
+#duration = "1 minute"
+
+[["not-yahoo.kumomta.com".automation]]
+regex = "s"
+action = "Suspend"
+duration = "7 minutes"
+
+[["not-yahoo.kumomta.com".automation]]
+regex = "421"
+action = "Suspend"
+duration = "10 minutes"
+
+[["yahoo.com".automation]]
+regex = "421"
+action = "Suspend"
+duration = "1 second"
+
+[["yahoo.com".automation]]
+regex = "failure"
+action = "Suspend"
+duration = "3 minutes"
+
+[["yahoo.com".automation]]
+regex = "\\[TSS04\\]"
+action = "Suspend"
+duration = "1 minute"
+
+[["gmail.com".automation]]
+regex = "account"
+action = "Suspend"
+duration = "3 minutes"
+
+
+
