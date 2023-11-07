@@ -23,7 +23,7 @@ local dkim_sign = require 'policy-extras.dkim_sign'
 
 -- Create first basic webhook
 local wh_target = 'http://52.156.138.239:80/hud/collect/'
-local basic_wh = create_webhook("webhook",wh_target,"my_user","my_pass",log_hooks)
+k_helpers.create_webhook("webhook",wh_target,"my_user","my_pass",log_hooks)
 
 -- Create second alternate webhook
 --[[ commented as this is only an example
@@ -194,7 +194,7 @@ end)
 ----------------------------------------------------------------------------
 
 -- Cache the credentials so we are not constantly hitting the DB
-cached_sqlite_auth_check = kumo.memoize(sqlite_auth_check, {
+cached_sqlite_auth_check = kumo.memoize(k_helpers.sqlite_auth_check, {
   name = 'sqlite_auth',
   ttl = '5 minutes',
   capacity = 100,

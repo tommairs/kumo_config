@@ -3,7 +3,8 @@
 -- a collection of useful functions
 -- to enhance KumoMTA
 --[[---------------------------]]--
-local mod = {}
+local name = "k_helpers"
+local mod = { }
 local kumo = require 'kumo'
 local utils = require 'policy-extras.policy_utils'
 local sqlite = require 'sqlite'
@@ -20,7 +21,7 @@ local sqlite = require 'sqlite'
 -- pass = HTTP basic password (unencrypted)
 -- log_hooks = log_hooks (exactly as spelled)
 ---------------------------------------------------------------------
-function create_webhook(wh_name,wh_target,basic_user,basic_pass,log_hooks)
+function mod.create_webhook(wh_name,wh_target,basic_user,basic_pass,log_hooks)
  log_hooks:new {
    name = wh_name,
    constructor = function(domain, tenant, campaign)
@@ -58,7 +59,7 @@ end
 -- db is expected to have two text fields called email and password
 -- Note that the "email" field is just text with no format validation
 -------------------------------------------------------------  
-function sqlite_auth_check(user, password)
+function mod.sqlite_auth_check(user, password)
     local db = sqlite.open '/home/myaccount/mypswd.db'
     local result = db:execute ('select * from users where email=? and password=?', user,password)
 
@@ -77,7 +78,7 @@ function sqlite_auth_check(user, password)
 -- but in this case it writes to an external file
 -- This could be resource intensive so only use it for debugging
 -------------------------------------------------------------------------
-function k_printTableF( filename, t )
+function mod.k_printTableF( filename, t )
     local fh = io.open(filename,"a")
     local printTable_cache = {}
 
@@ -126,13 +127,13 @@ function k_printTableF( filename, t )
 end
 
 --[[ isempty() is a shortcut to eval if a varualble is nill or no value ]]--
-function isempty(s)
+function mod.isempty(s)
     return s == nil or s == ''
 end
 
 --[[ Extract the x-tenant header value and addign it to the tenant variable ]]--
 -- function set_tenant_by_X()
-function set_tenant_by_X(headername)
+function mod.set_tenant_by_X(headername)
   local headers = message:get_all_headers()
   local tenant = "default"
   if headers[headername] == high then
@@ -144,14 +145,14 @@ end
 
 --[[ Print a text string to a local file ]]--
 -- function k_print(fname,text)
-function k_print(fname,text)
+function mod.k_print(fname,text)
   fh = io.open(fname,"a")
   fh:write(text)
   fh:close()
 end
 
 
-function table.contains(table, element)
+function mod.table_contains(table, element)
   for _, value in pairs(table) do
     if value == element then
       return true
@@ -163,4 +164,4 @@ end
 
 
 
-
+return mod
