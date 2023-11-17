@@ -21,29 +21,6 @@
   prohibited_hosts = ['127.0.0.0/8']
   max_connection_rate = '100/hour'
 
-["not-yahoo.kumomta.com"]
-  max_deliveries_per_connection = 10000
-#  retry_interval = '300s'
-  enable_tls = 'Disabled'
-  max_ready = 100000
-  connection_limit = 40000
-
-
-#[["kumomta1.com".automation]]
-#regex = "failed to resolve queue"
-#action = "Suspend"
-#action = SetConfig{{name="connection_limit", value=11}}
-#duration = "1 minute"
-
-[["not-yahoo.kumomta.com".automation]]
-regex = "s"
-action = "Suspend"
-duration = "7 minutes"
-
-[["not-yahoo.kumomta.com".automation]]
-regex = "421"
-action = "Suspend"
-duration = "10 minutes"
 
 [["yahoo.com".automation]]
 regex = "421"

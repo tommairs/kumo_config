@@ -22,9 +22,9 @@
   source_address = '172.31.9.228'
   ehlo_domain = 'demo2.kumomta.com'
 
-[source.'tomtest-pub']
-  source_address = '52.156.138.16'
-  ehlo_domain = 'kdev2.aasland.com'
+#[source.'tomtest-pub']
+#  source_address = '52.156.138.16'
+#  ehlo_domain = 'kdev2.mydomain.com'
 
 
 

@@ -6,32 +6,12 @@
   log_oob = true
   relay_to = false
 
-#['kdev2.aasland.com']
-#  relay_to = true
-
-#['bounce.kdev2.aasland.com']
-#  log_oob = true
-
-#['fbl.kdev2.aasland.com']
-#  log_arf = true
 #
-
-["demo2.kumomta.com"]
-# relay to anywhere, so long as the sender domain is auth-send.example.com
-# and the connected peer has authenticated as any of the authorization identities
-# listed below using SMTP AUTH
-relay_from_authz = [ 'demo', 'myuser' ]
-
-["bounce.demo2.kumomta.com"]
-# relay to anywhere, so long as the sender domain is auth-send.example.com
-# and the connected peer has authenticated as any of the authorization identities
-# listed below using SMTP AUTH
-relay_from_authz = [ 'demo' ]
-
 
 ["demo.kumomta.com"]
 # relay to anywhere, so long as the sender domain is auth-send.example.com
 # and the connected peer has authenticated as any of the authorization identities
 # listed below using SMTP AUTH
-relay_from_authz = [ 'demo' ]
+relay_from_authz = [ 'demo', 'myuser' ]
+
 

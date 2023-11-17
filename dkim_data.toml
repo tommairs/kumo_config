@@ -23,29 +23,16 @@
   algo = 'sha256'
 
 
-#[domain.'kdev2.aasland.com']
-#  selector = 'edtest'
-#  algo = 'ed25519'
-#  headers = [ 'From', 'To', 'Subject', 'Date', 'MIME-Version' ]
-#  filename = "/opt/kumomta/etc/dkim/kdev2.aasland.com/id_ed25519.key"
-#  policy = "SignAlways"
 
 [domain.'demo2.kumomta.com']
 #  selector = 'dkimselector'
 #  algo = 'sha256'
-#  headers = [ 'From', 'To', 'Subject', 'Date', 'MIME-Version' ]
+#  headers = ['From','To','Subject','Date','MIME-Version','List-Unsubscribe','List-Unsubscribe-Post']
+  headers = ['From','To','Subject','Date','MIME-Version','x-job']
 #  filename = "/var/customers/keys.key"
   policy = "SignAlways"
 #  policy = "SignOnlyIfInDNS"
 
-
-[domain.'mx-sink.wezfurlong.org']
-  selector = 'dkimselector'
-  algo = 'sha256'
-  headers = [ 'From', 'To', 'Subject', 'Date', 'MIME-Version' ]
-  filename = "/opt/kumomta/etc/dkim/kdev2.aasland.com/dkimselector.key"
-  policy = "SignAlways"
-#  policy = "SignOnlyIfInDNS"
 
 
 
