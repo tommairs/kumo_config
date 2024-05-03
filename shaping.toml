@@ -4,43 +4,33 @@
 
 ["default"]
   replace_base = true
-  max_deliveries_per_connection = 2
-  #retry_interval = '2400s'
-#  enable_tls = 'Opportunistic'
-#  enable_tls = 'OpportunisticInsecure'
-  enable_tls = 'Disabled'
-  max_ready = 10000
+#  max_deliveries_per_connection = 2
+  enable_tls = 'Opportunistic'
+#  max_ready = 10000
   connection_limit  = 32
-  connect_timeout = '60s'
-  ehlo_timeout = '90s'
-  mail_from_timeout = '60s'
-  rcpt_to_timeout = '60s'
-  data_timeout = '90s'
-  rset_timeout = '90s'
-  idle_timeout = '120s'
   prohibited_hosts = ['127.0.0.0/8']
-  max_connection_rate = '100/hour'
+#  max_connection_rate = '100/hour'
 
 
 [["yahoo.com".automation]]
 regex = "421"
 action = "Suspend"
-duration = "1 second"
+duration = "10 minutes"
 
 [["yahoo.com".automation]]
 regex = "failure"
 action = "Suspend"
-duration = "3 minutes"
+duration = "10 minutes"
 
 [["yahoo.com".automation]]
 regex = "\\[TSS04\\]"
 action = "Suspend"
-duration = "1 minute"
+duration = "1 hour"
 
 [["gmail.com".automation]]
 regex = "account"
 action = "Suspend"
-duration = "3 minutes"
+duration = "20 minutes"
 
 
 

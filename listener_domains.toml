@@ -6,7 +6,7 @@
   log_oob = true
   relay_to = false
 
-#
+
 
 ["demo.kumomta.com"]
 # relay to anywhere, so long as the sender domain is auth-send.example.com

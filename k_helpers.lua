@@ -21,6 +21,10 @@ local sqlite = require 'sqlite'
 -- pass = HTTP basic password (unencrypted)
 -- log_hooks = log_hooks (exactly as spelled)
 ---------------------------------------------------------------------
+--
+-- Note that it is probably better to use the Kumo built-in helper function for this
+-- https://docs.kumomta.com/userguide/operation/webhooks/?h=webhook#using-the-log_hookslua-helper
+--
 function mod.create_webhook(wh_name,wh_target,basic_user,basic_pass,log_hooks)
  log_hooks:new {
    name = wh_name,
@@ -76,7 +80,11 @@ function mod.sqlite_auth_check(user, password)
   end
 
 
--- this function converts a string to base64
+-- This function converts a string to base64
+-- Note that it is porbably better to use the Kumo builting functions for this
+-- https://docs.kumomta.com/reference/kumo.encode/base64_decode/
+-- https://docs.kumomta.com/reference/kumo.encode/base64_encode/
+--
 function mod.to_base64(data)
     local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
     return ((data:gsub('.', function(x)
@@ -163,12 +171,12 @@ function mod.k_printTableF( filename, t )
 
 end
 
---[[ isempty() is a shortcut to eval if a varualble is nill or no value ]]--
+--[[ isempty() is a shortcut to eval if a variable is nill or no value ]]--
 function mod.isempty(s)
     return s == nil or s == ''
 end
 
---[[ Extract the x-tenant header value and addign it to the tenant variable ]]--
+--[[ Extract the x-tenant header value and assign it to the tenant variable ]]--
 -- function set_tenant_by_X()
 function mod.set_tenant_by_X(headername)
   local headers = message:get_all_headers()
@@ -199,6 +207,22 @@ function mod.table_contains(table, element)
 
 end
 
+-----------------------------------------------------------------------------
+--[[ Function to extract the actual email from a pretty-print email address ]]--
+
+function mod.esanitize(in_val)
+  local sos = 1
+  local eos = #in_val
+  local out_val = in_val:sub(sos,eos)
+  sos, eos = string.find(in_val, "<.*>", 1, false)
+  if sos ~= nil and sos >= 1 then
+    out_val = string.sub(in_val,sos+1,eos-1)
+  end
+  
+  return (out_val)	
+end
+
+-----------------------------------------------------------------------------
 
 
 return mod

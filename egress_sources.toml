@@ -7,7 +7,6 @@
 
 [pool.'default']
 [pool.'default'.'tomtest']
-#[pool.'default'.'tomtest-pub']
 
 [pool.'pool-0']
 [pool.'pool-0'.'tomtest']
@@ -19,12 +18,9 @@
 # Egress IP Definitions
 
 [source.'tomtest']
-  source_address = '172.31.9.228'
+  source_address = '172.31.29.222'
   ehlo_domain = 'demo2.kumomta.com'
 
-#[source.'tomtest-pub']
-#  source_address = '52.156.138.16'
-#  ehlo_domain = 'kdev2.mydomain.com'
 
 
 

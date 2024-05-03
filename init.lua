@@ -1,5 +1,7 @@
 --[[ *************************************** ]]--
---    INIT.LUA Tom's version
+--    INIT.LUA 
+--    Tom's Dev/Test version
+--    Has almost everyting
 --[[ *************************************** ]]--
 --
 -- This top section before the init phase is critical to preload
@@ -8,30 +10,19 @@
 local mod = {}
 local kumo = require 'kumo'
 
--- Load helper and utility librariess
-local utils = require 'policy-extras.policy_utils'
+-- Customer modifiable data files and other external helpers
+local node = kumo.toml_load('/opt/kumomta/etc/policy/node_local.toml')
 local k_helpers = require 'k_helpers'
 local sqlite = require 'sqlite'
 
+-- Load helper and utility librariess
+local utils = require 'policy-extras.policy_utils'
 local shaping = require 'policy-extras.shaping'
 local log_hooks = require 'policy-extras.log_hooks'
 local queue_module = require 'policy-extras.queue'
 local listener_domains = require 'policy-extras.listener_domains'
 local sources = require 'policy-extras.sources'
 local dkim_sign = require 'policy-extras.dkim_sign'
-
-
--- Create first basic webhook
-local wh_target = 'http://demo.kumomta.com:80//collector/'
-k_helpers.create_webhook("webhook",wh_target,"a_ebhook_user","a_webhook_password",log_hooks)
-
-
--- Create second alternate webhook
---[[ commented as this is only an example
-local wh_target = 'http://collectors.kumomta.com:81/hud2/collect/'
-local basic_wh = create_webhook("webhook2",wh_target,"fakeusername","A.ReallyBadPassword",log_hooks)
-]]--
-
 
 -- Load TSA shaper tools
 local shaping_config = '/opt/kumomta/etc/policy/shaping.toml'
@@ -41,10 +32,10 @@ local shaping_config = '/opt/kumomta/etc/policy/shaping.toml'
   extra_files = {shaping_config},
 }
 
---[[ ================================================================================== ]]--
+-- ==================================================================================
 -- INIT phase
 -- CALLED ON STARTUP, ALL ENTRIES WITHIN init REQUIRE A SERVER RESTART WHEN CHANGED.
---[[ ================================================================================== ]]--
+-- ================================================================================== 
 
 kumo.on('init', function()
 
@@ -104,7 +95,8 @@ kumo.on('init', function()
 local params = {
       listen = '0:25',
       relay_hosts = {'127.0.0.1'},
-    --  banner = "My email server",
+      -- banner = "My email server",
+      banner = node['vars']['max_attempts'],
     --  tls_private_key = "/opt/kumomta/etc/tls/my.demo.kumomta.com/ca.key",
     --  tls_certificate = "/opt/kumomta/etc/tls/my.demo.kumomta.com/ca.crt",
     }
@@ -123,6 +115,75 @@ end) -- END OF THE INIT EVENT
 
 
 --[[ ======= Load Helpers ============================ ]]--
+--
+-- Create first basic webhook
+
+
+--[[ Load Webhook config ]]--
+--[[ change the variables below and uncomment this section ]]--
+
+--[[
+
+local wh_user = "baduser"
+local wh_pass = "evenworsepassword"
+local wh_uri = "http://<webhook uri>"
+
+
+-- loading the loghook helper --
+local log_hooks = require 'policy-extras.log_hooks'
+log_hooks:new {
+  name = 'webhook',
+  -- log_parameters are combined with the name and
+  -- passed through to kumo.configure_log_hook
+  log_parameters = {
+    headers = { 'Subject', 'X-Customer-ID' },
+  },
+  -- queue config are passed to kumo.make_queue_config.
+  -- You can use these to override the retry parameters
+  -- if you wish.
+  -- The defaults are shown below.
+  queue_config = {
+    retry_interval = '1m',
+    max_retry_interval = '20m',
+  },
+ constructor = function(domain, tenant, campaign)
+    local connection = {}
+    local client = kumo.http.build_client {}
+    function connection:send(message)
+      local response = client
+        :post(wh__uri)
+        :header('Content-Type', 'application/json')
+        :basic_auth(wh_user,wh_pass)
+        :body(message:get_data())
+        :send()
+
+      local disposition = string.format(
+        '%d %s: %s',
+        response:status_code(),
+        response:status_reason(),
+        response:text()
+      )
+
+      if response:status_is_success() then
+        return disposition
+      end
+
+      -- Signal that the webhook request failed.
+      -- In this case the 500 status prevents us from retrying
+      -- the webhook call again, but you could be more sophisticated
+      -- and analyze the disposition to determine if retrying it
+      -- would be useful and generate a 400 status instead.
+      -- In that case, the message we be retryed later, until
+      -- it reached it expiration.
+      kumo.reject(500, disposition)
+    end
+    return connection
+  end,
+
+}
+
+]]--
+
 
 -- Load  Queue helper 
 -- You can pass multiple file names if desired
@@ -144,6 +205,8 @@ kumo.on('get_egress_path_config', shaper.get_egress_path_config)
 local dkim_signer = dkim_sign:setup({'/opt/kumomta/etc/policy/dkim_data.toml'})
 
 
+
+
 ----------------------------------------------------------------------------
 --[[ Determine queue routing ]]--
 ----------------------------------------------------------------------------
@@ -153,7 +216,6 @@ kumo.on('get_queue_config', function(domain, tenant, campaign)
 
 print ("domain,tenant,campaign")
 print (domain,tenant,campaign)
-
 
   if domain == 'gmail.com' then
     -- Store this domain into a maildir, rather than attempting
@@ -169,6 +231,26 @@ print (domain,tenant,campaign)
   return kumo.make_queue_config{}
 end)
 ]]--
+
+
+
+
+----------------------------------------------------------------------------
+--[[          Requeue if transfailed too many times                     ]]--
+----------------------------------------------------------------------------
+
+
+kumo.on('message_requeued', function(msg)
+  local max_attempts = node['vars']['max_attempts']
+  local alt_tenant = node['vars']['alt_tenant']
+  local current_tenant = msg:get_meta('tenant')
+  local queue = msg:get_queue_name()
+  if current_tenant ~= alt_tenant and msg:num_attempts() >= max_attempts then
+    -- reroute after X attempts
+     msg:set_meta('tenant', alt_tenant)
+  end
+end)
+
 
 
 ----------------------------------------------------------------------------
