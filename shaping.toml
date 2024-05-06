@@ -4,12 +4,19 @@
 
 ["default"]
   replace_base = true
-#  max_deliveries_per_connection = 2
-  enable_tls = 'Opportunistic'
+  max_deliveries_per_connection = 1
+
+#  enable_tls = 'Opportunistic'
+  enable_tls = 'Disabled'
 #  max_ready = 10000
-  connection_limit  = 32
+  connection_limit  = 1
   prohibited_hosts = ['127.0.0.0/8']
 #  max_connection_rate = '100/hour'
+
+
+['utils.kumomta.com']
+smtp_port = 587
+
 
 
 [["yahoo.com".automation]]

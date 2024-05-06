@@ -41,7 +41,7 @@ kumo.on('init', function()
 
 -- For debugging only
 --  kumo.set_diagnostic_log_filter 'kumod=debug,kumod::queue=trace'
---  kumo.set_diagnostic_log_filter 'kumod=debug'
+  kumo.set_diagnostic_log_filter 'kumod=debug'
 
 -----------------------------------------------------
 --[[ Define the Spool ]]--
@@ -96,7 +96,7 @@ local params = {
       listen = '0:25',
       relay_hosts = {'127.0.0.1'},
       -- banner = "My email server",
-      banner = node['vars']['max_attempts'],
+      banner = node['vars']['ehlo_banner'],
     --  tls_private_key = "/opt/kumomta/etc/tls/my.demo.kumomta.com/ca.key",
     --  tls_certificate = "/opt/kumomta/etc/tls/my.demo.kumomta.com/ca.crt",
     }
@@ -120,14 +120,16 @@ end) -- END OF THE INIT EVENT
 
 
 --[[ Load Webhook config ]]--
---[[ change the variables below and uncomment this section ]]--
+--[[ change the variabled below and uncomment this section ]]--
 
 --[[
 
+----local wh_user = "baduser"
+--local wh_pass = "evenworsepassword"
+--local wh_uri = "http://<webhook uri>"
 local wh_user = "baduser"
 local wh_pass = "evenworsepassword"
-local wh_uri = "http://<webhook uri>"
-
+local wh_uri = 'http://demo.kumomta.com:80//collector/'
 
 -- loading the loghook helper --
 local log_hooks = require 'policy-extras.log_hooks'
@@ -280,6 +282,7 @@ kumo.on('smtp_server_message_received', function(msg)
     msg:append_header("List-Unsubscribe-Post", "List-Unsubscribe=One-Click")
 ]]--
 
+msg:set_meta('routing_domain','utils.kumomta.com')
 
 print ("DKIM signing message")
 -- SIGNING MUST COME LAST OR YOU COULD BREAK YOUR DKIM SIGNATURES
