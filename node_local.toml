@@ -8,4 +8,6 @@
   Relay_Hosts = "'127.0.0.1/32'"
   Prohibited_Hosts = "'127.0.0.0/8'"
   Hostname = "stolen.e.kumomta.com"
+  Connection_Timeout = 5
+  Banner_Timeout = 1
 

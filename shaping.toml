@@ -12,7 +12,8 @@
   connection_limit  = 1
   prohibited_hosts = ['127.0.0.0/8']
 #  max_connection_rate = '100/hour'
-
+  banner_timeout = 1
+  connect_timeout = 5
 
 ['utils.kumomta.com']
 smtp_port = 587

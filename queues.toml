@@ -11,6 +11,10 @@ default_tenant = "default-tenant"
 [tenant.'default-tenant']
 egress_pool = 'pool-0'
 
+[tenant.'proxy']
+egress_pool = 'ext'
+max_age = '1 hour'
+
 [tenant.'mytenant']
 # Which pool should be used for this tenant
 egress_pool = 'pool-1'

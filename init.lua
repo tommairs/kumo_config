@@ -18,19 +18,44 @@ local sqlite = require 'sqlite'
 -- Load helper and utility librariess
 local utils = require 'policy-extras.policy_utils'
 local shaping = require 'policy-extras.shaping'
-local log_hooks = require 'policy-extras.log_hooks'
 local queue_module = require 'policy-extras.queue'
 local listener_domains = require 'policy-extras.listener_domains'
 local sources = require 'policy-extras.sources'
 local dkim_sign = require 'policy-extras.dkim_sign'
+local log_hooks = require 'policy-extras.log_hooks'
 
--- Load TSA shaper tools
-local shaping_config = '/opt/kumomta/etc/policy/shaping.toml'
-  local shaper = shaping:setup_with_automation {
+-- Configure the sending IP addresses
+sources:setup { '/opt/kumomta/etc/policy/sources.toml' }
+
+-- Configure DKIM signing
+local dkim_signer =
+  dkim_sign:setup { '/opt/kumomta/etc/policy/dkim_data.toml' }
+
+-- Load Traffic Shaping Automation Helper
+local shaper = shaping:setup_with_automation {
   publish = { 'http://127.0.0.1:8008' },
   subscribe = { 'http://127.0.0.1:8008' },
-  extra_files = {shaping_config},
+  extra_files = { '/opt/kumomta/etc/policy/shaping.toml' },
 }
+
+-- Send a JSON webhook to a local network host.
+-- See https://docs.kumomta.com/userguide/operation/webhooks/
+-- Uncomment the following after the collector is configured
+--[[
+log_hooks:new_json {
+  name = 'webhook',
+  url = 'http://10.0.0.1:4242/log',
+  log_parameters = {
+    headers = { 'Subject', 'X-Customer-ID' },
+  },
+}
+]]--
+
+
+-- Configure queue management
+local queue_helper =
+  queue_module:setup { '/opt/kumomta/etc/policy/queues.toml' }
+
 
 -- ==================================================================================
 -- INIT phase
@@ -115,125 +140,14 @@ end) -- END OF THE INIT EVENT
 
 
 --[[ ======= Load Helpers ============================ ]]--
---
--- Create first basic webhook
-
-
---[[ Load Webhook config ]]--
---[[ change the variabled below and uncomment this section ]]--
-
---[[
-
-----local wh_user = "baduser"
---local wh_pass = "evenworsepassword"
---local wh_uri = "http://<webhook uri>"
-local wh_user = "baduser"
-local wh_pass = "evenworsepassword"
-local wh_uri = 'http://demo.kumomta.com:80//collector/'
-
--- loading the loghook helper --
-local log_hooks = require 'policy-extras.log_hooks'
-log_hooks:new {
-  name = 'webhook',
-  -- log_parameters are combined with the name and
-  -- passed through to kumo.configure_log_hook
-  log_parameters = {
-    headers = { 'Subject', 'X-Customer-ID' },
-  },
-  -- queue config are passed to kumo.make_queue_config.
-  -- You can use these to override the retry parameters
-  -- if you wish.
-  -- The defaults are shown below.
-  queue_config = {
-    retry_interval = '1m',
-    max_retry_interval = '20m',
-  },
- constructor = function(domain, tenant, campaign)
-    local connection = {}
-    local client = kumo.http.build_client {}
-    function connection:send(message)
-      local response = client
-        :post(wh__uri)
-        :header('Content-Type', 'application/json')
-        :basic_auth(wh_user,wh_pass)
-        :body(message:get_data())
-        :send()
-
-      local disposition = string.format(
-        '%d %s: %s',
-        response:status_code(),
-        response:status_reason(),
-        response:text()
-      )
-
-      if response:status_is_success() then
-        return disposition
-      end
-
-      -- Signal that the webhook request failed.
-      -- In this case the 500 status prevents us from retrying
-      -- the webhook call again, but you could be more sophisticated
-      -- and analyze the disposition to determine if retrying it
-      -- would be useful and generate a 400 status instead.
-      -- In that case, the message we be retryed later, until
-      -- it reached it expiration.
-      kumo.reject(500, disposition)
-    end
-    return connection
-  end,
-
-}
-
-]]--
-
-
--- Load  Queue helper 
--- You can pass multiple file names if desired
- local queue_helper = queue_module:setup({'/opt/kumomta/etc/policy/queues.toml'})
 
 -- Load Listener Domains Helper
 kumo.on('get_listener_domain', listener_domains:setup { '/opt/kumomta/etc/policy/listener_domains.toml' } )
 
--- Load Egress Sources and Pools Helper 
-sources:setup { '/opt/kumomta/etc/policy/egress_sources.toml' }
-
 
 -- Load  Traffic Shaping Helper 
-local get_shaping_config = shaping:setup()
+--local get_shaping_config = shaping:setup()
 kumo.on('get_egress_path_config', shaper.get_egress_path_config)
-
-
--- Load DKIM Signing helper function
-local dkim_signer = dkim_sign:setup({'/opt/kumomta/etc/policy/dkim_data.toml'})
-
-
-
-
-----------------------------------------------------------------------------
---[[ Determine queue routing ]]--
-----------------------------------------------------------------------------
---[[ Note that this section is ignored if you use the queue helper
-kumo.on('get_queue_config', function(domain, tenant, campaign)
--- This is here in case you want to add any custom queue config
-
-print ("domain,tenant,campaign")
-print (domain,tenant,campaign)
-
-  if domain == 'gmail.com' then
-    -- Store this domain into a maildir, rather than attempting
-    -- to deliver via SMTP
-    return kumo.make_queue_config {
-      protocol = {
-        maildir_path = '/var/tmp/kumo-maildir',
-      },
-    }
-  end
-  -- Otherwise, just use the defaults
-
-  return kumo.make_queue_config{}
-end)
-]]--
-
 
 
 
@@ -282,11 +196,14 @@ kumo.on('smtp_server_message_received', function(msg)
     msg:append_header("List-Unsubscribe-Post", "List-Unsubscribe=One-Click")
 ]]--
 
-msg:set_meta('routing_domain','utils.kumomta.com')
+local u = kumo.uuid.new_v7()
+print ("UUID = ", u)
+
+
 
 print ("DKIM signing message")
 -- SIGNING MUST COME LAST OR YOU COULD BREAK YOUR DKIM SIGNATURES
-  dkim_signer(msg)
+--  dkim_signer(msg)
 end)
 
 

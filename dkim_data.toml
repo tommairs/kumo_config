@@ -20,18 +20,16 @@
 
 # The default set of headers to sign if otherwise unspecified
   headers = [ "From", "To", "Subject", "Date", "MIME-Version", "Content-Type", "Sender" ]
-  algo = 'sha256'
 
 
 
 [domain.'demo2.kumomta.com']
 #  selector = 'dkimselector'
-#  algo = 'sha256'
+  algo = 'sha256'
 #  headers = ['From','To','Subject','Date','MIME-Version','List-Unsubscribe','List-Unsubscribe-Post']
   headers = ['From','To','Subject','Date','MIME-Version','x-job']
 #  filename = "/var/customers/keys.key"
-  policy = "SignAlways"
-#  policy = "SignOnlyIfInDNS"
+  policy = "Always"
 
 
 
