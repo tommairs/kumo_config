@@ -23,13 +23,13 @@
 # Egress IP Definitions
 
 [source.'tomtest']
-  source_address = '172.31.3.232'
-  ehlo_domain = 'cord.kumomta.com'
+#  source_address = '172.31.3.232'
+  ehlo_domain = 'demo.kumomta.com'
 
 [source.'external']
  socks5_proxy_server = '172.31.9.228:5000'
  socks5_proxy_source_address = '172.31.9.228'
- ehlo_domain = 'ex.cord.kumomta.com'
+ ehlo_domain = 'demo.kumomta.com'
 
 
 

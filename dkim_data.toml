@@ -23,8 +23,8 @@
 
 
 
-[domain.'demo2.kumomta.com']
-#  selector = 'dkimselector'
+[domain.'demo.kumomta.com']
+  selector = 'dkim1024'
   algo = 'sha256'
 #  headers = ['From','To','Subject','Date','MIME-Version','List-Unsubscribe','List-Unsubscribe-Post']
   headers = ['From','To','Subject','Date','MIME-Version','x-job']

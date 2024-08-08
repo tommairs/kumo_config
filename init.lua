@@ -122,8 +122,8 @@ local params = {
       relay_hosts = {'127.0.0.1'},
       -- banner = "My email server",
       banner = node['vars']['ehlo_banner'],
-    --  tls_private_key = "/opt/kumomta/etc/tls/my.demo.kumomta.com/ca.key",
-    --  tls_certificate = "/opt/kumomta/etc/tls/my.demo.kumomta.com/ca.crt",
+      tls_private_key = "/opt/kumomta/etc/tls/demo.kumomta.com/ca.key",
+      tls_certificate = "/opt/kumomta/etc/tls/demo.kumomta.com/ca.crt",
     }
    kumo.start_esmtp_listener(params)
     
@@ -176,7 +176,7 @@ kumo.on('smtp_server_message_received', function(msg)
 
 -----------------------------------------
   -- Added this to fix messageID issues
-  -- This shoudl always be loaded first
+  -- This should always be loaded first
   local failed = msg:check_fix_conformance(
     -- check for and reject messages with these issues:
     'MISSING_COLON_VALUE',
@@ -190,19 +190,16 @@ kumo.on('smtp_server_message_received', function(msg)
 
   queue_helper:apply(msg)
 
---[[ Sample code to add list-unsubscribe headers in-transit
+--[[ Sample code to add list-unsubscribe headers in-transit ]]--
     local keyuserid = k_helpers.to_base64(msg:recipient().email .. msg:get_meta('tenant'))
     msg:append_header("List-Unsubscribe", "<mailto:unsub@demo2.kumomta.com?subject=unsub>, <https://luna.kumomta.com/unsubscribe.php?t=" .. keyuserid .. ">")
     msg:append_header("List-Unsubscribe-Post", "List-Unsubscribe=One-Click")
-]]--
 
-local u = kumo.uuid.new_v7()
-print ("UUID = ", u)
+  -- Route all outbound messages to the KumoMTA smartsink
+  msg:set_meta("routing_domain","smartsink.kumomta.com")
 
-
-
-print ("DKIM signing message")
 -- SIGNING MUST COME LAST OR YOU COULD BREAK YOUR DKIM SIGNATURES
+-- Uncomment this when DKIM keys are set and tested
 --  dkim_signer(msg)
 end)
 
@@ -213,10 +210,9 @@ end)
 ----------------------------------------------------------------------------
 kumo.on('http_message_generated', function(msg)
 
-  queue_helper:apply(msg)
-
--- SIGNING MUST COME LAST OR YOU COULD BREAK YOUR DKIM SIGNATURES
-  dkim_signer(msg)
+-- Discard any HTTP injected message
+  msg:set_meta("queue","null")
+  return
 end)
 
 

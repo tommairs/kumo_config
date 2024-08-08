@@ -8,7 +8,7 @@
 
 
 
-["demo2.kumomta.com"]
+["demo.kumomta.com"]
 # relay to anywhere, so long as the sender domain is auth-send.example.com
 # and the connected peer has authenticated as any of the authorization identities
 # listed below using SMTP AUTH
