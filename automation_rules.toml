@@ -1,0 +1,84 @@
+# Automation rules
+
+# The provider syntax provides a wider collection of domains similar to the PMTA domain-macro settings
+
+[[provider.'yahoo'.automation]]
+  regex = [
+    "[TS04]",
+    "[TS05]",
+    "[TSS04]",
+    "[TSS05]",
+    "[IPTS04]",
+    "[IPTS04]",
+    "(DYN:T1)",
+    "421rlynw",
+    "(DNS:NR)",
+    "[TS01]",
+    "[TS02]",
+    "[TS03]",
+    "[TS04]",
+    "[TSS01]",
+    "[TSS02]",
+    "[TSS03]",
+    "[TSS04]",
+    "[TSS05]",
+  ]
+ 
+  action = [
+        {SetConfig={name="max_message_rate", value="10/m"}},
+        {SetConfig={name="max_connection_rate", value="1/m"}},
+  ]
+  duration = "90m"
+
+
+# TM: 20241108: Commented out and moved to the section above
+# Note that this changes a TSS04 behaviour to 10/s instead of "Suspend"
+#[['yahoo.com'.automation]]
+#  regex = [
+#    "[TS04]",
+#    "[TS05]",
+#    "[TSS04]",
+#    "[TSS05]",
+#  ]
+#
+#  action = "Suspend"
+#  duration = "1h"
+#
+
+
+
+[['gmail.com'.automation]]
+  regex = [
+    "550 5.7.1 .* Our system has detected that this message is likely",
+    "Our system has detected that this message is likely suspicious due to the very low reputation of the sending domain",
+  ]
+  action = [
+        {SetConfig={name="max_message_rate", value="30/m"}},
+  ]
+    duration = "1h"
+
+
+[[provider.'msn'.automation]]
+  regex = [
+    "451 4.7.652 The mail server .* has exceeded the maximum number of connections.",
+  ]
+  action = [
+        {SetConfig={name="max_message_rate", value="420/m"}},
+  ]
+  duration = "1h"
+
+
+[[provider.'icloud'.automation]]
+  regex = [
+    "554 5.7.1 [CS01] Message rejected due to local policy.",
+    "554 5.7.1 [CS02] Message rejected due to local policy.",
+    "451 4.7.1 Service unavailable - try again later",
+  ]
+  action = [
+        {SetConfig={name="max_message_rate", value="420/m"}},
+  ]
+  duration = "1h"
+
+
+
+

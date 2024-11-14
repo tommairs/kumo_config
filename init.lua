@@ -10,9 +10,13 @@
 local mod = {}
 local kumo = require 'kumo'
 
+-- This fires a collection of functions for tesitng purposes
+dofile('/opt/kumomta/etc/policy/testingstuff.lua')
+
+
 -- Customer modifiable data files and other external helpers
-local node = kumo.toml_load('/opt/kumomta/etc/policy/node_local.toml')
-local k_helpers = require 'k_helpers'
+local node = kumo.serde.toml_load('/opt/kumomta/etc/policy/node_local.toml')
+local tools = require 'tools'
 local sqlite = require 'sqlite'
 
 -- Load helper and utility librariess
@@ -35,7 +39,10 @@ local dkim_signer =
 local shaper = shaping:setup_with_automation {
   publish = { 'http://127.0.0.1:8008' },
   subscribe = { 'http://127.0.0.1:8008' },
-  extra_files = { '/opt/kumomta/etc/policy/shaping.toml' },
+  extra_files = { '/opt/kumomta/etc/policy/shaping.toml',
+                  '/opt/kumomta/etc/policy/providers.toml',
+                  '/opt/kumomta/etc/policy/automation_rules.toml',
+	  },
 }
 
 -- Send a JSON webhook to a local network host.
@@ -50,6 +57,9 @@ log_hooks:new_json {
   },
 }
 ]]--
+
+
+dofile('/opt/kumomta/etc/policy/batch_hook.lua')
 
 
 -- Configure queue management
@@ -122,8 +132,8 @@ local params = {
       relay_hosts = {'127.0.0.1'},
       -- banner = "My email server",
       banner = node['vars']['ehlo_banner'],
-      tls_private_key = "/opt/kumomta/etc/tls/demo.kumomta.com/ca.key",
-      tls_certificate = "/opt/kumomta/etc/tls/demo.kumomta.com/ca.crt",
+--      tls_private_key = "/opt/kumomta/etc/tls/demo.kumomta.com/ca.key",
+--      tls_certificate = "/opt/kumomta/etc/tls/demo.kumomta.com/ca.crt",
     }
    kumo.start_esmtp_listener(params)
     
@@ -190,8 +200,10 @@ kumo.on('smtp_server_message_received', function(msg)
 
   queue_helper:apply(msg)
 
+
+  --
 --[[ Sample code to add list-unsubscribe headers in-transit ]]--
-    local keyuserid = k_helpers.to_base64(msg:recipient().email .. msg:get_meta('tenant'))
+    local keyuserid = kumo.encode.base64_encode(msg:recipient().email .. msg:get_meta('tenant'))
     msg:append_header("List-Unsubscribe", "<mailto:unsub@demo2.kumomta.com?subject=unsub>, <https://luna.kumomta.com/unsubscribe.php?t=" .. keyuserid .. ">")
     msg:append_header("List-Unsubscribe-Post", "List-Unsubscribe=One-Click")
 
@@ -202,6 +214,26 @@ kumo.on('smtp_server_message_received', function(msg)
 -- Uncomment this when DKIM keys are set and tested
 --  dkim_signer(msg)
 end)
+
+
+
+
+  local get_dsn_classifier = kumo.memoize(function()
+  local data = kumo.json_load '/opt/kumomta/etc/policy/dsn_rewrites.json'
+  return kumo.regex_set_map.new(data)
+end, {
+  name = 'dsn_rewrite',
+  ttl = '5 minutes',
+  capacity = 1,
+})
+
+kumo.on('smtp_client_rewrite_delivery_status',  function(response, domain, tenant, campaign, routing_domain)
+    local map = get_dsn_classifier()
+    print ("DSN MAP = ", map[response])
+    return map[response]
+  end
+)
+
 
 
 
