@@ -28,5 +28,5 @@ Restart the KumoMTA service(s) `sudo systemctl restart kumomta.service kumo-tsa-
 # Support
 None whatsoever.  This is a private repo with no guarantee or support.
 
-KumoMTA operational questions shoudl be directed to the [KumoMTA discord](https://discord.gg/grQBdm9h)
+KumoMTA operational questions should be directed to the [KumoMTA discord](https://discord.gg/grQBdm9h)
 

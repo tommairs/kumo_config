@@ -11,7 +11,7 @@ local mod = {}
 local kumo = require 'kumo'
 
 -- This fires a collection of functions for tesitng purposes
-dofile('/opt/kumomta/etc/policy/testingstuff.lua')
+-- dofile('/opt/kumomta/etc/policy/testingstuff.lua')
 
 
 -- Customer modifiable data files and other external helpers
@@ -59,12 +59,13 @@ log_hooks:new_json {
 ]]--
 
 
-dofile('/opt/kumomta/etc/policy/batch_hook.lua')
+-- dofile('/opt/kumomta/etc/policy/batch_hook.lua')
+--[[
+kumo.on('pre_init', function()
+  kumo.enable_memory_callstack_tracking(true)
+end)
+]]--
 
-
--- Configure queue management
-local queue_helper =
-  queue_module:setup { '/opt/kumomta/etc/policy/queues.toml' }
 
 
 -- ==================================================================================
@@ -161,6 +162,41 @@ kumo.on('get_egress_path_config', shaper.get_egress_path_config)
 
 
 
+
+-- load mailbox domains list
+local function check_for_mbox_domain(domain)
+  local mbox_domains = kumo.serde.toml_load('/opt/kumomta/etc/policy/mbox_domains.toml')
+  return tools.table_contains_a(mbox_domains['domains'],domain)
+end
+
+local cached_mbox_domain_check = kumo.memoize(check_for_mbox_domain, {
+  name = 'mbox_domain_check',
+  ttl = '1 day',
+  capacity = 1000,
+})
+
+
+-- Enable maildir for webmail handling
+kumo.on('get_queue_config', function(domain, tenant, campaign, routing_domain)
+        print ("Evaluate this for mailbox delivery")
+--  if domain == 'maildir.example.com' then
+  if cached_mbox_domain_check(domain) == true then
+          print ("Putting this in a mailbox")
+    return kumo.make_queue_config {
+      protocol = {
+        maildir_path = '/var/maildirs/{{ domain_part }}/{{ local_part }}',
+--        maildir_path = '/var/tmp/kumo-maildir',
+        dir_mode = tonumber('775', 8),
+        file_mode = tonumber('664', 8),
+      },
+    }
+  end
+end)
+
+
+
+
+
 ----------------------------------------------------------------------------
 --[[          Requeue if transfailed too many times                     ]]--
 ----------------------------------------------------------------------------
@@ -177,6 +213,27 @@ kumo.on('message_requeued', function(msg)
   end
 end)
 
+
+--[[
+-- Route to MAILDIR if qualified
+kumo.on('get_queue_config', function(domain, tenant, campaign, routing_domain)
+print ("Test domain to see if it qualifies for InBoxing", domain, cached_inbox_domain(domain))
+  if cached_inbox_domain(domain) == true then
+	  print ("Found an inbox routable domain.  Writing to MBOX")
+    return kumo.make_queue_config {
+      protocol = {
+        maildir_path = '/var//maildirs/{{ domain_part }}/{{ local_part }}',
+        dir_mode = tonumber('775', 8),
+        file_mode = tonumber('664', 8),
+      },
+    }
+  end
+end)
+]]--
+
+-- Configure queue management
+local queue_helper =
+  queue_module:setup { '/opt/kumomta/etc/policy/queues.toml' }
 
 
 ----------------------------------------------------------------------------
@@ -208,7 +265,7 @@ kumo.on('smtp_server_message_received', function(msg)
     msg:append_header("List-Unsubscribe-Post", "List-Unsubscribe=One-Click")
 
   -- Route all outbound messages to the KumoMTA smartsink
-  msg:set_meta("routing_domain","smartsink.kumomta.com")
+--  msg:set_meta("routing_domain","smartsink.kumomta.com")
 
 -- SIGNING MUST COME LAST OR YOU COULD BREAK YOUR DKIM SIGNATURES
 -- Uncomment this when DKIM keys are set and tested

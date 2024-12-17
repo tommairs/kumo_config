@@ -87,7 +87,8 @@ function mod.sqlite_auth_check(user, password)
 -- This could be resource intensive so only use it for debugging
 -------------------------------------------------------------------------
 function mod.k_printTableF( filename, t )
-    local fh = io.open(filename,"a")
+--	local filename = "/tmp/temptable"
+    local fh = io.open(filename, "a")
     local printTable_cache = {}
 
     local function sub_printTable( t, indent, filename )
@@ -158,6 +159,17 @@ function mod.k_print(fname,text)
   fh:write(text)
   fh:close()
 end
+
+
+function mod.table_contains_a(table, value)
+  for i = 1,#table do
+    if (table[i] == value) then
+      return true
+    end
+  end
+  return false
+end
+
 
 
 function mod.table_contains(table, element)
